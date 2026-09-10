@@ -6,6 +6,7 @@ import ProvenanceGraph from "./components/ProvenanceGraph";
 import DriftCard from "./components/DriftCard";
 import CertificateViewer from "./components/CertificateViewer";
 import ImageSentinelCard from "./components/ImageSentinelCard";
+import DatasetForensicsCard from "./components/DatasetForensicsCard";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("model");
@@ -15,6 +16,7 @@ export default function App() {
   const [datasetResult, setDatasetResult] = useState(null);
   const [imageResult, setImageResult] = useState(null);
   const [resourceProfile, setResourceProfile] = useState("Standard");
+  const [datasetRole, setDatasetRole] = useState("training_eval");
   const [error, setError] = useState(null);
 
   const handleFileChange = (e) => {
@@ -64,7 +66,7 @@ export default function App() {
     formData.append("file", selectedFile);
 
     try {
-      const response = await fetch("http://localhost:8000/scan/dataset", {
+      const response = await fetch(`http://localhost:8000/scan/dataset?role=${datasetRole}`, {
         method: "POST",
         body: formData,
       });
@@ -237,20 +239,35 @@ export default function App() {
                       {selectedFile ? selectedFile.name : "Select Dataset (.npy/.npz)"}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono">
-                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : "Choose clean_dataset.npy or poisoned_dataset.npy"}
+                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : "Choose clean_dataset.npy, poisoned_dataset.npy, or clean_overlays.npy"}
                     </div>
                   </div>
                 </label>
               </div>
 
-              <button
-                onClick={handleScanDataset}
-                disabled={!selectedFile || loading}
-                className="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-lg transition flex items-center space-x-2"
-              >
-                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-                <span>{loading ? "Scanning..." : "Scan Dataset Artifact"}</span>
-              </button>
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 text-xs font-mono">
+                  <span className="text-slate-400 font-semibold">Declared Role:</span>
+                  <select
+                    value={datasetRole}
+                    onChange={(e) => setDatasetRole(e.target.value)}
+                    className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-cyan-400 font-bold focus:outline-none focus:border-cyan-500 cursor-pointer"
+                  >
+                    <option value="training_eval">Training / Evaluation Dataset</option>
+                    <option value="perturbation_overlay">Perturbation Reference Overlay</option>
+                    <option value="live_input_batch">Live Inference Input Batch</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleScanDataset}
+                  disabled={!selectedFile || loading}
+                  className="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-lg transition flex items-center space-x-2"
+                >
+                  {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+                  <span>{loading ? "Scanning..." : "Scan Dataset Artifact"}</span>
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -261,15 +278,7 @@ export default function App() {
             )}
 
             {datasetResult && (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3 font-mono text-xs">
-                  <span className="font-bold text-slate-200">Dataset Risk Assessment: {datasetResult.dataset_risk_assessment}</span>
-                  <span className="text-slate-400">Total Samples: {datasetResult.total_samples}</span>
-                </div>
-                <pre className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-emerald-400/90 overflow-x-auto max-h-96">
-                  {JSON.stringify(datasetResult, null, 2)}
-                </pre>
-              </div>
+              <DatasetForensicsCard datasetResult={datasetResult} />
             )}
           </div>
         )}

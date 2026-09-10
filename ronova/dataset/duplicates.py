@@ -1,10 +1,32 @@
 from typing import List, Dict, Any, Tuple
+import base64
+import io
 import hashlib
 import imagehash
 import numpy as np
 from PIL import Image
 
 from ronova.core.types import Finding, EvidenceStrength
+
+
+def _generate_thumbnail_b64(img_arr: np.ndarray) -> str:
+    """Converts a sample array slice into a base64 PNG data URL."""
+    try:
+        arr = img_arr.squeeze()
+        if arr.ndim > 2:
+            arr = arr.mean(axis=0)
+        if arr.max() <= 1.0:
+            arr = (arr * 255.0).clip(0, 255).astype(np.uint8)
+        else:
+            arr = arr.clip(0, 255).astype(np.uint8)
+
+        img = Image.fromarray(arr, mode="L").resize((56, 56), Image.Resampling.NEAREST)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        b64_str = base64.b64encode(buf.getvalue()).decode("utf-8")
+        return f"data:image/png;base64,{b64_str}"
+    except Exception:
+        return ""
 
 
 class DuplicateDetector:
@@ -55,6 +77,8 @@ class DuplicateDetector:
                         "hamming_distance": int(dist),
                         "mse_distance": round(mse, 6),
                         "is_exact_match": bool(is_exact),
+                        "thumbnail_1": _generate_thumbnail_b64(dataset[i]),
+                        "thumbnail_2": _generate_thumbnail_b64(dataset[j]),
                     })
 
         num_dups = len(duplicate_pairs)

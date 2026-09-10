@@ -30,9 +30,9 @@ def run_dataset_forensics(dataset_path: str, output_json_path: str) -> dict:
     print(f"      Risk Score           : {dup_finding.risk_score}")
 
     # 2. Anomaly Clustering
-    print("[2/2] Running Embedding-Space Anomaly Detector...")
-    anomaly_detector = AnomalyDetector(contamination=0.08)
-    anom_indices, anom_finding = anomaly_detector.analyze(dataset)
+    print("[2/2] Running Calibrated Embedding-Space Anomaly Detector...")
+    anomaly_detector = AnomalyDetector(score_threshold=-0.07)
+    anom_indices, anom_finding, coords, scores_sum, thumbs = anomaly_detector.analyze(dataset)
     print(f"      Anomalous Samples Flagged: {len(anom_indices)}")
     print(f"      Indices                  : {anom_indices}")
     print(f"      Finding Title            : {anom_finding.title}")
@@ -84,6 +84,8 @@ def main():
 
         # Sanity Checks
         assert clean_res["duplicate_pairs_count"] == 0, "Clean dataset should have 0 duplicate pairs"
+        assert clean_res["anomalous_samples_count"] == 0, "Clean dataset should have 0 anomalies under calibrated threshold"
+        assert clean_res["dataset_risk_assessment"] == "ACCEPT", "Clean dataset should receive ACCEPT verdict"
         assert poisoned_res["duplicate_pairs_count"] > 0, "Poisoned dataset should flag duplicate pairs"
         assert poisoned_res["anomalous_samples_count"] > 0, "Poisoned dataset should flag anomalous samples"
         assert poisoned_res["dataset_risk_assessment"] in ["REVIEW", "QUARANTINE"], "Poisoned dataset should trigger REVIEW"

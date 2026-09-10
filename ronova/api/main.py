@@ -228,9 +228,14 @@ async def scan_model(file: UploadFile = File(...)) -> Dict[str, Any]:
 
 
 @app.post("/scan/dataset")
-async def scan_dataset(file: UploadFile = File(...)) -> Dict[str, Any]:
+async def scan_dataset(
+    file: UploadFile = File(...),
+    role: str = Query("training_eval", description="Dataset role (training_eval, perturbation_overlay, live_input_batch)"),
+) -> Dict[str, Any]:
     if not (file.filename.endswith(".npy") or file.filename.endswith(".npz")):
         raise HTTPException(status_code=400, detail="Only .npy/.npz dataset files supported")
+
+    active_role = role if role in ["training_eval", "perturbation_overlay", "live_input_batch"] else "training_eval"
 
     temp_dir = tempfile.mkdtemp()
     ds_path = os.path.join(temp_dir, file.filename)
@@ -238,23 +243,153 @@ async def scan_dataset(file: UploadFile = File(...)) -> Dict[str, Any]:
         with open(ds_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        dataset = np.load(ds_path)
+        try:
+            loaded_data = np.load(ds_path)
+            if isinstance(loaded_data, np.lib.npyio.NpzFile):
+                first_key = loaded_data.files[0]
+                dataset = loaded_data[first_key]
+            else:
+                dataset = loaded_data
+        except Exception as e:
+            return {
+                "filename": file.filename,
+                "dataset_role": active_role,
+                "analysis_protocol": "Dataset Load Failed",
+                "array_shape": [],
+                "dtype": "unknown",
+                "dimensions": 0,
+                "channels": 0,
+                "total_samples": 0,
+                "dataset_risk_assessment": "UNGUARANTEED",
+                "overall_risk_score": 100.0,
+                "overall_evidence_strength": "HIGH",
+                "duplicate_pairs_count": 0,
+                "duplicate_pairs": [],
+                "anomalous_samples_count": 0,
+                "anomalous_indices": [],
+                "anomaly_scores_summary": {},
+                "class_channel_distribution": {},
+                "chart_coordinates": [],
+                "flagged_thumbnails": [],
+                "findings": [{
+                    "detector_id": "dataset_loader",
+                    "finding_type": "UNGUARANTEED_CORRUPT_DATASET",
+                    "risk_score": 100.0,
+                    "evidence_strength": "HIGH",
+                    "title": "Dataset Load Failure",
+                    "explanation": f"Unable to parse dataset numpy array: {str(e)}",
+                    "limitations": "File corruption or invalid numpy format.",
+                    "evidence_details": {"error": str(e)},
+                    "is_hard_gate": True,
+                }],
+                "verdict_explanation": f"Evaluation UNGUARANTEED: Dataset file could not be parsed as a valid numpy array ({str(e)}).",
+                "limitations_disclaimer": "Failed dataset load prevents feature extraction or duplicate scanning.",
+            }
+
+        # Check shape suitability (must be at least 2D array with samples > 0)
+        if not isinstance(dataset, np.ndarray) or dataset.ndim < 2 or len(dataset) == 0:
+            return {
+                "filename": file.filename,
+                "dataset_role": active_role,
+                "analysis_protocol": "Unsupported Shape Protocol",
+                "array_shape": list(dataset.shape) if hasattr(dataset, "shape") else [],
+                "dtype": str(dataset.dtype) if hasattr(dataset, "dtype") else "unknown",
+                "dimensions": int(dataset.ndim) if hasattr(dataset, "ndim") else 0,
+                "channels": 0,
+                "total_samples": len(dataset) if hasattr(dataset, "__len__") else 0,
+                "dataset_risk_assessment": "UNGUARANTEED",
+                "overall_risk_score": 80.0,
+                "overall_evidence_strength": "HIGH",
+                "duplicate_pairs_count": 0,
+                "duplicate_pairs": [],
+                "anomalous_samples_count": 0,
+                "anomalous_indices": [],
+                "anomaly_scores_summary": {},
+                "class_channel_distribution": {},
+                "chart_coordinates": [],
+                "flagged_thumbnails": [],
+                "findings": [{
+                    "detector_id": "dataset_shape_validator",
+                    "finding_type": "UNGUARANTEED_UNSUPPORTED_SHAPE",
+                    "risk_score": 80.0,
+                    "evidence_strength": "HIGH",
+                    "title": "Unsupported Dataset Array Geometry",
+                    "explanation": f"Dataset array shape {dataset.shape if hasattr(dataset, 'shape') else 'invalid'} does not satisfy minimum 2D sample requirements.",
+                    "limitations": "Dataset forensics requires multi-sample image/feature tensors.",
+                    "evidence_details": {"shape": list(dataset.shape) if hasattr(dataset, "shape") else []},
+                    "is_hard_gate": False,
+                }],
+                "verdict_explanation": "Evaluation UNGUARANTEED: Dataset shape is incompatible with 2D/3D/4D image array forensics.",
+                "limitations_disclaimer": "Insufficient sample dimensions for CNN feature extraction.",
+            }
+
+        # Protocol naming
+        if active_role == "perturbation_overlay":
+            analysis_protocol = "STRIP Perturbation Overlay Reference Set Validation"
+        elif active_role == "live_input_batch":
+            analysis_protocol = "Live Input Batch Distribution Scan"
+        else:
+            analysis_protocol = "Calibrated CNN Embedding Isolation Forest + Perceptual dHash/MSE"
+
+        # Compute Distribution Summary
+        channels = int(dataset.shape[1]) if dataset.ndim == 4 else (1 if dataset.ndim == 3 else 1)
+        dist_summary = {
+            "mean_pixel": round(float(np.mean(dataset)), 4),
+            "std_pixel": round(float(np.std(dataset)), 4),
+            "min_pixel": round(float(np.min(dataset)), 4),
+            "max_pixel": round(float(np.max(dataset)), 4),
+            "shape_str": " × ".join(str(dim) for dim in dataset.shape),
+        }
+
         dup_detector = DuplicateDetector(mse_threshold=0.001)
         dup_pairs, dup_finding = dup_detector.analyze(dataset)
 
         anom_detector = AnomalyDetector()
-        anom_indices, anom_finding = anom_detector.analyze(dataset)
+        anom_indices, anom_finding, chart_coords, scores_summary, flagged_thumbs = anom_detector.analyze(dataset)
 
-        dataset_risk = "ACCEPT" if len(dup_pairs) == 0 and len(anom_indices) == 0 else "REVIEW"
+        has_issues = len(dup_pairs) > 0 or len(anom_indices) > 0
+        dataset_risk = "REVIEW" if has_issues else "ACCEPT"
+        overall_risk = max(dup_finding.risk_score, anom_finding.risk_score) if has_issues else 0.0
+
+        if not has_issues:
+            if active_role == "perturbation_overlay":
+                explanation = f"Perturbation overlay dataset '{file.filename}' validated cleanly for STRIP reference use. No duplicates or anomalous features detected."
+            elif active_role == "live_input_batch":
+                explanation = f"Live input batch '{file.filename}' clean. Feature distribution shows no anomalies or duplicate samples."
+            else:
+                explanation = f"Training/Evaluation dataset '{file.filename}' passes all forensic checks cleanly under calibrated thresholds. 0 duplicate pairs and 0 anomalous sample clusters detected."
+        else:
+            explanation = f"Dataset '{file.filename}' (Role: {active_role}) flagged for REVIEW: {len(dup_pairs)} duplicate pair(s) and {len(anom_indices)} sample(s) anomalous in a way consistent with poisoning or labeling errors."
+
+        limitations_disclaimer = (
+            "Embedding-space anomaly detection and perceptual hash duplicate checking flag statistical and structural outliers "
+            "consistent with poisoning, label noise, or data duplication; they do not constitute deterministic proof of "
+            "intentional adversarial dataset poisoning."
+        )
 
         return {
             "filename": file.filename,
-            "total_samples": len(dataset),
+            "dataset_role": active_role,
+            "analysis_protocol": analysis_protocol,
+            "array_shape": list(dataset.shape),
+            "dtype": str(dataset.dtype),
+            "dimensions": int(dataset.ndim),
+            "channels": channels,
+            "total_samples": int(len(dataset)),
             "dataset_risk_assessment": dataset_risk,
+            "overall_risk_score": float(overall_risk),
+            "overall_evidence_strength": "HIGH" if not has_issues else "MEDIUM",
             "duplicate_pairs_count": len(dup_pairs),
+            "duplicate_pairs": dup_pairs,
             "anomalous_samples_count": len(anom_indices),
             "anomalous_indices": anom_indices,
+            "anomaly_scores_summary": scores_summary,
+            "class_channel_distribution": dist_summary,
+            "chart_coordinates": chart_coords,
+            "flagged_thumbnails": flagged_thumbs,
             "findings": [dup_finding.model_dump(), anom_finding.model_dump()],
+            "verdict_explanation": explanation,
+            "limitations_disclaimer": limitations_disclaimer,
         }
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

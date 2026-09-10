@@ -128,3 +128,36 @@ class AssuranceReport(BaseModel):
     safety_gate: SafetyGateResult
     findings: List[Finding]
     pipeline_timestamp: float = Field(default_factory=time.time)
+
+
+class DatasetRole(str, Enum):
+    TRAINING_EVAL = "training_eval"
+    PERTURBATION_OVERLAY = "perturbation_overlay"
+    LIVE_INPUT_BATCH = "live_input_batch"
+
+
+class DatasetScanResult(BaseModel):
+    filename: str
+    dataset_role: str
+    analysis_protocol: str
+    array_shape: List[int]
+    dtype: str
+    dimensions: int
+    channels: int
+    total_samples: int
+    dataset_risk_assessment: str
+    overall_risk_score: float = 0.0
+    overall_evidence_strength: EvidenceStrength = EvidenceStrength.HIGH
+    duplicate_pairs_count: int
+    duplicate_pairs: List[Dict[str, Any]] = Field(default_factory=list)
+    anomalous_samples_count: int
+    anomalous_indices: List[int] = Field(default_factory=list)
+    anomaly_scores_summary: Dict[str, Any] = Field(default_factory=dict)
+    class_channel_distribution: Dict[str, Any] = Field(default_factory=dict)
+    chart_coordinates: List[Dict[str, Any]] = Field(default_factory=list)
+    flagged_thumbnails: List[Dict[str, Any]] = Field(default_factory=list)
+    findings: List[Finding] = Field(default_factory=list)
+    verdict_explanation: str
+    limitations_disclaimer: str
+    timestamp: float = Field(default_factory=time.time)
+

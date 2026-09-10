@@ -55,6 +55,7 @@ def main():
         ([sys.executable, "-m", "pytest", "scripts/test_model_scan_independence.py"], "Pytest: Model Scan Evidence Independence (3 tests)"),
         ([sys.executable, "-m", "pytest", "scripts/test_key_management.py"], "Pytest: Signing Key Lifecycle & Trust Root (7 tests)"),
         ([sys.executable, "-m", "pytest", "scripts/test_image_sentinel.py"], "Pytest: Image Sentinel / Image Assurance Layer (23 tests)"),
+        ([sys.executable, "-m", "pytest", "scripts/test_dataset_forensics.py"], "Pytest: Dataset Forensics & Role Calibration (7 tests)"),
     ]
 
     for cmd, desc in test_suites:
@@ -79,7 +80,7 @@ def main():
 
     print("=======================================================")
     if all_passed:
-        print("ALL 15 REGRESSION SUITES PASSED CLEANLY (73 Focused Unit Tests + 6 Component Scripts + Frontend Build)!")
+        print("ALL 16 REGRESSION SUITES PASSED CLEANLY (80 Focused Unit Tests + 6 Component Scripts + Frontend Build)!")
         print("RONOVA MVP BUILD IS OFFICIALLY LOCKED & FULLY RECONCILED.")
         sys.exit(0)
     else:
