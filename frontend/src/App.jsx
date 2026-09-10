@@ -1,0 +1,334 @@
+import React, { useState } from "react";
+import { Shield, FileCheck, Cpu, Database, Image as ImageIcon, Lock, RefreshCw, AlertTriangle } from "lucide-react";
+import VerdictPanel from "./components/VerdictPanel";
+import PerturbationViz from "./components/PerturbationViz";
+import ProvenanceGraph from "./components/ProvenanceGraph";
+import DriftCard from "./components/DriftCard";
+import CertificateViewer from "./components/CertificateViewer";
+import ImageSentinelCard from "./components/ImageSentinelCard";
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState("model");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [datasetResult, setDatasetResult] = useState(null);
+  const [imageResult, setImageResult] = useState(null);
+  const [resourceProfile, setResourceProfile] = useState("Standard");
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      setResult(null);
+      setDatasetResult(null);
+      setImageResult(null);
+      setError(null);
+    }
+  };
+
+  const handleScanModel = async () => {
+    if (!selectedFile) return;
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await fetch("http://localhost:8000/scan/model", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || "Model scan request failed");
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleScanDataset = async () => {
+    if (!selectedFile) return;
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await fetch("http://localhost:8000/scan/dataset", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || "Dataset scan request failed");
+      }
+
+      const data = await response.json();
+      setDatasetResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleScanImage = async () => {
+    if (!selectedFile) return;
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await fetch(`http://localhost:8000/scan/image?profile=${resourceProfile}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || "Image scan request failed");
+      }
+
+      const data = await response.json();
+      setImageResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start p-6 space-y-6">
+      {/* Top Console Bar */}
+      <header className="max-w-6xl w-full flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl text-cyan-400">
+            <Shield className="w-8 h-8" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-white">RONOVA Console</h1>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">
+              Robust Offline Network for Observation, Verification & Assurance
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 text-xs font-mono bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800 text-slate-300">
+            <Lock className="w-4 h-4 text-emerald-400" />
+            <span>Trust Root: Ed25519 Active</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Tab Switcher */}
+      <div className="max-w-6xl w-full flex space-x-2 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 font-sans text-xs">
+        <button
+          onClick={() => { setActiveTab("model"); setSelectedFile(null); setError(null); }}
+          className={`flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
+            activeTab === "model" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Cpu className="w-4 h-4" />
+          <span>Model Assurance (POST /scan/model)</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveTab("dataset"); setSelectedFile(null); setError(null); }}
+          className={`flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
+            activeTab === "dataset" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Database className="w-4 h-4" />
+          <span>Dataset Forensics (POST /scan/dataset)</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveTab("image"); setSelectedFile(null); setError(null); }}
+          className={`flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
+            activeTab === "image" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <ImageIcon className="w-4 h-4" />
+          <span>Image Sentinel (POST /scan/image)</span>
+        </button>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="max-w-6xl w-full space-y-6">
+        {activeTab === "model" && (
+          <div className="space-y-6">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-md flex items-center justify-between">
+              <div className="flex items-center space-x-4 flex-1 mr-4">
+                <label className="flex-1 flex items-center space-x-3 border border-slate-800 hover:border-cyan-500/50 bg-slate-950/80 rounded-xl p-3.5 cursor-pointer transition">
+                  <input type="file" accept=".onnx" onChange={handleFileChange} className="hidden" />
+                  <FileCheck className="w-6 h-6 text-cyan-400 shrink-0" />
+                  <div className="truncate">
+                    <div className="text-xs font-semibold text-slate-200 truncate">
+                      {selectedFile ? selectedFile.name : "Select ONNX Classifier Model"}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-mono">
+                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : "Choose clean_classifier.onnx or backdoored_classifier.onnx"}
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                onClick={handleScanModel}
+                disabled={!selectedFile || loading}
+                className="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-lg transition flex items-center space-x-2"
+              >
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Cpu className="w-4 h-4" />}
+                <span>{loading ? "Running Pipeline..." : "Scan Model Artifact"}</span>
+              </button>
+            </div>
+
+            {error && (
+              <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {result && (
+              <div className="space-y-6">
+                <VerdictPanel
+                  policy={result.policy}
+                  sha256={result.sha256}
+                  filename={result.filename}
+                  manifestVerification={result.manifest_verification}
+                />
+                <PerturbationViz stripAnalysis={result.strip_analysis} />
+                <ProvenanceGraph
+                  provenanceManifest={result.provenance_manifest}
+                  signedCheckpoint={result.signed_checkpoint}
+                />
+                <DriftCard inputDriftData={result.input_distribution_drift} />
+                <CertificateViewer result={result} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "dataset" && (
+          <div className="space-y-6">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-md flex items-center justify-between">
+              <div className="flex items-center space-x-4 flex-1 mr-4">
+                <label className="flex-1 flex items-center space-x-3 border border-slate-800 hover:border-cyan-500/50 bg-slate-950/80 rounded-xl p-3.5 cursor-pointer transition">
+                  <input type="file" accept=".npy,.npz" onChange={handleFileChange} className="hidden" />
+                  <FileCheck className="w-6 h-6 text-cyan-400 shrink-0" />
+                  <div className="truncate">
+                    <div className="text-xs font-semibold text-slate-200 truncate">
+                      {selectedFile ? selectedFile.name : "Select Dataset (.npy/.npz)"}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-mono">
+                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : "Choose clean_dataset.npy or poisoned_dataset.npy"}
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                onClick={handleScanDataset}
+                disabled={!selectedFile || loading}
+                className="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-lg transition flex items-center space-x-2"
+              >
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+                <span>{loading ? "Scanning..." : "Scan Dataset Artifact"}</span>
+              </button>
+            </div>
+
+            {error && (
+              <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {datasetResult && (
+              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3 font-mono text-xs">
+                  <span className="font-bold text-slate-200">Dataset Risk Assessment: {datasetResult.dataset_risk_assessment}</span>
+                  <span className="text-slate-400">Total Samples: {datasetResult.total_samples}</span>
+                </div>
+                <pre className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-emerald-400/90 overflow-x-auto max-h-96">
+                  {JSON.stringify(datasetResult, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "image" && (
+          <div className="space-y-6">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-md flex items-center justify-between">
+              <div className="flex items-center space-x-4 flex-1 mr-4">
+                <label className="flex-1 flex items-center space-x-3 border border-slate-800 hover:border-cyan-500/50 bg-slate-950/80 rounded-xl p-3.5 cursor-pointer transition">
+                  <input type="file" accept=".png,.jpeg,.jpg,.webp" onChange={handleFileChange} className="hidden" />
+                  <ImageIcon className="w-6 h-6 text-cyan-400 shrink-0" />
+                  <div className="truncate">
+                    <div className="text-xs font-semibold text-slate-200 truncate">
+                      {selectedFile ? selectedFile.name : "Select Image Input (PNG, JPEG, WebP)"}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-mono">
+                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : "Supports PNG, JPEG, WebP format validation & isolated decoding"}
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 text-xs font-mono">
+                  <span className="text-slate-400 font-semibold">Resource Policy:</span>
+                  <select
+                    value={resourceProfile}
+                    onChange={(e) => setResourceProfile(e.target.value)}
+                    className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-cyan-400 font-bold focus:outline-none focus:border-cyan-500 cursor-pointer"
+                  >
+                    <option value="Standard">Standard (Max 4096px / 10MB)</option>
+                    <option value="Demo">Demo (Max 2048px / 5MB)</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleScanImage}
+                  disabled={!selectedFile || loading}
+                  className="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-lg transition flex items-center space-x-2"
+                >
+                  {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                  <span>{loading ? "Analyzing Image..." : "Scan Image Sentinel"}</span>
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {imageResult && (
+              <ImageSentinelCard imageResult={imageResult} />
+            )}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

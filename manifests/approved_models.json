@@ -1,0 +1,12 @@
+{
+  "manifest_version": "1.0",
+  "approved_models": [
+    {
+      "model_id": "vision-classifier-clean-001",
+      "version": "1.0.0",
+      "sha256": "c2d44045fcf72ef1581c34107e34139da5b00dcce0560d7f74976ce4b0ba37a1",
+      "signer": "RONOVA-ROOT-ED25519",
+      "approved_at": "2026-09-10T12:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# Secrets and Private Keys
+secrets/
+*.pem
+!trust/root_public.pem
+
+# Audit Ledgers and Temporary Artifacts
+artifacts/*.json
+artifacts/*.jsonl
+
+# Python & Environment
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+*.egg-info/
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.env
+*.log
