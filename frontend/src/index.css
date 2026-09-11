@@ -1,9 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-slate-950 text-slate-100 antialiased font-sans min-h-screen selection:bg-cyan-500 selection:text-white;
-  }
+/* RONOVA visual system: the evidence stays the same; the shell can now adapt
+   to the operator's preferred working mode. */
+:root,
+[data-theme="cyber"] {
+  --app-bg: #060b14;
+  --panel-bg: rgba(10, 18, 32, 0.84);
+  --panel-deep: rgba(6, 11, 20, 0.76);
+  --panel-hover: rgba(6, 182, 212, 0.08);
+  --text-main: #e4eaf2;
+  --text-soft: #8b9bb0;
+  --text-muted: #58677c;
+  --accent: #22d3ee;
+  --accent-strong: #06b6d4;
+  --accent-soft: rgba(6, 182, 212, 0.16);
+  --border-subtle: rgba(34, 211, 238, 0.14);
+  --border-mid: rgba(34, 211, 238, 0.30);
+  --shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+  --highlight: rgba(255, 255, 255, 0.08);
+  --blur: 18px;
+  --font-ui: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-data: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --radius-panel: 18px;
+  --app-image: none;
+}
+
+[data-theme="mono"] {
+  --app-bg: #0a0a0a;
+  --panel-bg: rgba(20, 20, 20, 0.88);
+  --panel-deep: rgba(10, 10, 10, 0.80);
+  --panel-hover: rgba(255, 255, 255, 0.07);
+  --text-main: #f5f5f5;
+  --text-soft: #a3a3a3;
+  --text-muted: #686868;
+  --accent: #e2e8f0;
+  --accent-strong: #ffffff;
+  --accent-soft: rgba(226, 232, 240, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.11);
+  --border-mid: rgba(255, 255, 255, 0.28);
+  --shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+  --highlight: rgba(255, 255, 255, 0.07);
+  --app-image: none;
+}
+
+[data-theme="white"] {
+  --app-bg: #e8edf1;
+  --panel-bg: rgba(255, 255, 255, 0.76);
+  --panel-deep: rgba(245, 248, 250, 0.82);
+  --panel-hover: rgba(8, 145, 178, 0.08);
+  --text-main: #0f172a;
+  --text-soft: #475569;
+  --text-muted: #64748b;
+  --accent: #0891b2;
+  --accent-strong: #0e7490;
+  --accent-soft: rgba(8, 145, 178, 0.13);
+  --border-subtle: rgba(14, 116, 144, 0.16);
+  --border-mid: rgba(14, 116, 144, 0.32);
+  --shadow: 0 18px 45px rgba(71, 85, 105, 0.14);
+  --highlight: rgba(255, 255, 255, 0.78);
+  --app-image: none;
+}
+
+[data-theme="silk"] {
+  --app-bg: #16130e;
+  --panel-bg: rgba(30, 26, 18, 0.82);
+  --panel-deep: rgba(22, 19, 14, 0.78);
+  --panel-hover: rgba(216, 191, 132, 0.10);
+  --text-main: #f5eedf;
+  --text-soft: #c9bfa8;
+  --text-muted: #9c8d63;
+  --accent: #f1dda6;
+  --accent-strong: #d8bf84;
+  --accent-soft: rgba(216, 191, 132, 0.16);
+  --border-subtle: rgba(216, 191, 132, 0.18);
+  --border-mid: rgba(216, 191, 132, 0.36);
+  --shadow: 0 18px 45px rgba(10, 8, 4, 0.30);
+  --highlight: rgba(255, 245, 218, 0.10);
+  --app-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E"), linear-gradient(170deg, #16130e 0%, #372f20 32%, #9c8d63 100%);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  @apply antialiased min-h-screen;
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+button, input, select { font-family: inherit; }
+code, pre, .font-mono { font-family: var(--font-data); }
+
+::selection {
+  background: var(--accent-strong);
+  color: var(--app-bg);
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 999px;
 }

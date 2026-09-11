@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, FileCheck, Cpu, Database, Image as ImageIcon, Lock, RefreshCw, AlertTriangle } from "lucide-react";
+import { Shield, FileCheck, Cpu, Database, Image as ImageIcon, Lock, RefreshCw, AlertTriangle, Palette } from "lucide-react";
 import VerdictPanel from "./components/VerdictPanel";
 import PerturbationViz from "./components/PerturbationViz";
 import ProvenanceGraph from "./components/ProvenanceGraph";
@@ -7,6 +7,14 @@ import DriftCard from "./components/DriftCard";
 import CertificateViewer from "./components/CertificateViewer";
 import ImageSentinelCard from "./components/ImageSentinelCard";
 import DatasetForensicsCard from "./components/DatasetForensicsCard";
+import "./App.css";
+
+const THEME_OPTIONS = [
+  { id: "cyber", label: "Cyber", dot: "theme-dot-cyber" },
+  { id: "mono", label: "Mono", dot: "theme-dot-mono" },
+  { id: "white", label: "White", dot: "theme-dot-white" },
+  { id: "silk", label: "Silk", dot: "theme-dot-silk" },
+];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("model");
@@ -17,6 +25,12 @@ export default function App() {
   const [imageResult, setImageResult] = useState(null);
   const [resourceProfile, setResourceProfile] = useState("Standard");
   const [error, setError] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem("ronova-theme") || "cyber");
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("ronova-theme", theme);
+  }, [theme]);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -113,9 +127,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start p-6 space-y-6">
+    <div className="app-shell min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start p-6 space-y-6">
       {/* Top Console Bar */}
-      <header className="max-w-6xl w-full flex items-center justify-between border-b border-slate-800 pb-4">
+      <header className="top-console max-w-6xl w-full flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center space-x-3">
           <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl text-cyan-400">
             <Shield className="w-8 h-8" />
@@ -128,7 +142,30 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="top-console-actions flex items-center space-x-3">
+          <div className="theme-control" title="Change console appearance">
+            <Palette className="w-3.5 h-3.5" />
+            <div className="theme-switcher" role="group" aria-label="Console theme selector">
+              <span
+                className="theme-active-indicator"
+                aria-hidden="true"
+                style={{ "--theme-index": Math.max(0, THEME_OPTIONS.findIndex((item) => item.id === theme)) }}
+              />
+              {THEME_OPTIONS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`theme-button ${theme === item.id ? "active" : ""}`}
+                  onClick={() => setTheme(item.id)}
+                  aria-pressed={theme === item.id}
+                  title={`Use ${item.label} theme`}
+                >
+                  <span className={`theme-dot ${item.dot}`} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center space-x-2 text-xs font-mono bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800 text-slate-300">
             <Lock className="w-4 h-4 text-emerald-400" />
             <span>Trust Root: Ed25519 Active</span>
@@ -137,10 +174,10 @@ export default function App() {
       </header>
 
       {/* Tab Switcher */}
-      <div className="max-w-6xl w-full flex space-x-2 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 font-sans text-xs">
+      <div className="mode-switcher-shell max-w-6xl w-full flex space-x-2 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 font-sans text-xs">
         <button
           onClick={() => { setActiveTab("model"); setSelectedFile(null); setError(null); }}
-          className={`flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
+          className={`mode-tab flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
             activeTab === "model" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
           }`}
         >
@@ -150,7 +187,7 @@ export default function App() {
 
         <button
           onClick={() => { setActiveTab("dataset"); setSelectedFile(null); setError(null); }}
-          className={`flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
+          className={`mode-tab flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
             activeTab === "dataset" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
           }`}
         >
@@ -160,7 +197,7 @@ export default function App() {
 
         <button
           onClick={() => { setActiveTab("image"); setSelectedFile(null); setError(null); }}
-          className={`flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
+          className={`mode-tab flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
             activeTab === "image" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
           }`}
         >
@@ -170,7 +207,7 @@ export default function App() {
       </div>
 
       {/* Main Content Area */}
-      <main className="max-w-6xl w-full space-y-6">
+      <main className="dashboard-main max-w-6xl w-full space-y-6">
         {activeTab === "model" && (
           <div className="space-y-6">
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-md flex items-center justify-between">
