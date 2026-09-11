@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, FileCheck, Cpu, Database, Image as ImageIcon, Lock, RefreshCw, AlertTriangle, Palette } from "lucide-react";
+import { Shield, FileCheck, Cpu, Database, Image as ImageIcon, Lock, RefreshCw, AlertTriangle } from "lucide-react";
 import VerdictPanel from "./components/VerdictPanel";
 import PerturbationViz from "./components/PerturbationViz";
 import ProvenanceGraph from "./components/ProvenanceGraph";
@@ -144,7 +144,6 @@ export default function App() {
 
         <div className="top-console-actions flex items-center space-x-3">
           <div className="theme-control" title="Change console appearance">
-            <Palette className="w-3.5 h-3.5" />
             <div className="theme-switcher" role="group" aria-label="Console theme selector">
               <span
                 className="theme-active-indicator"
