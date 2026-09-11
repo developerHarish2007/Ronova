@@ -170,36 +170,48 @@
   display: inline-block;
   filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
 }
+[data-theme="white"] .mode-switcher-shell {
+  background: rgba(225, 232, 238, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
 [data-theme="white"] .tab-active-indicator {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.62) 55%, rgba(255, 255, 255, 0.82) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
   box-shadow: 
-    inset 0 1.5px 1px 0 rgba(255, 255, 255, 1),
-    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.06),
-    0 8px 24px -4px rgba(15, 23, 42, 0.12),
-    0 0 16px 1px rgba(255, 255, 255, 0.7);
+    0 4px 14px rgba(15, 23, 42, 0.08),
+    inset 0 1px 1px 0 #ffffff !important;
 }
+
 [data-theme="white"] .mode-tab {
-  color: #64748b !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
 }
+
 [data-theme="white"] .mode-tab:hover {
-  color: #0f172a !important;
+  color: #000000 !important;
 }
+
 [data-theme="white"] .mode-tab.active {
-  color: #09090b !important;
+  color: #000000 !important;
   font-weight: 800 !important;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9), 0 0 12px rgba(0, 0, 0, 0.08);
+  text-shadow: none !important;
 }
+
 [data-theme="white"] .mode-tab.active svg {
-  color: #09090b !important;
-  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.8));
+  color: #000000 !important;
+  opacity: 1 !important;
+  filter: none !important;
 }
+
 [data-theme="white"] .mode-tab.active span {
-  background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #3f3f46 75%, #09090b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.85));
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: none !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+  filter: none !important;
 }
 
 .dashboard-main {
