@@ -16,6 +16,12 @@ const THEME_OPTIONS = [
   { id: "silk", label: "Silk", dot: "theme-dot-silk" },
 ];
 
+const TAB_OPTIONS = [
+  { id: "model", label: "Model Assurance (POST /scan/model)", icon: Cpu },
+  { id: "dataset", label: "Dataset Forensics (POST /scan/dataset)", icon: Database },
+  { id: "image", label: "Image Sentinel (POST /scan/image)", icon: ImageIcon },
+];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("model");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -172,41 +178,33 @@ export default function App() {
         </div>
       </header>
 
-      {/* Tab Switcher */}
-      <div className="mode-switcher-shell max-w-6xl w-full flex space-x-2 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 font-sans text-xs">
-        <button
-          onClick={() => { setActiveTab("model"); setSelectedFile(null); setError(null); }}
-          className={`mode-tab flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
-            activeTab === "model" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Cpu className="w-4 h-4" />
-          <span>Model Assurance (POST /scan/model)</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab("dataset"); setSelectedFile(null); setError(null); }}
-          className={`mode-tab flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
-            activeTab === "dataset" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Database className="w-4 h-4" />
-          <span>Dataset Forensics (POST /scan/dataset)</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab("image"); setSelectedFile(null); setError(null); }}
-          className={`mode-tab flex-1 py-2.5 rounded-lg font-medium transition flex items-center justify-center space-x-2 ${
-            activeTab === "image" ? "bg-cyan-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <ImageIcon className="w-4 h-4" />
-          <span>Image Sentinel (POST /scan/image)</span>
-        </button>
+      {/* Royal Minimalist Tab Switcher */}
+      <div className="mode-switcher-shell max-w-6xl w-full relative flex p-1.5 rounded-2xl border font-sans text-xs">
+        <span
+          className="tab-active-indicator"
+          aria-hidden="true"
+          style={{ "--tab-index": Math.max(0, TAB_OPTIONS.findIndex((t) => t.id === activeTab)) }}
+        />
+        {TAB_OPTIONS.map((tab) => {
+          const IconComp = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setSelectedFile(null); setError(null); }}
+              className={`mode-tab relative z-10 flex-1 py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center space-x-2.5 ${
+                isActive ? "active" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <IconComp className={`w-4 h-4 transition-transform duration-300 ${isActive ? "scale-110 text-inherit" : "opacity-75"}`} />
+              <span className="tracking-wide font-semibold">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Main Content Area */}
-      <main className="dashboard-main max-w-6xl w-full space-y-6">
+      <main key={activeTab} className="dashboard-main max-w-6xl w-full space-y-6">
         {activeTab === "model" && (
           <div className="space-y-6">
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-md flex items-center justify-between">

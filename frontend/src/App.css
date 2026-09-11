@@ -104,26 +104,68 @@
 .theme-dot-silk { color: #f1dda6; background: #9c8d63; }
 
 .mode-switcher-shell {
-  border-color: var(--border-subtle) !important;
+  position: relative;
+  display: flex;
+  padding: 0.35rem;
+  border-radius: 999px !important;
+  border: 1px solid var(--border-mid) !important;
   background: var(--panel-deep) !important;
-  box-shadow: inset 0 1px 0 var(--highlight), var(--shadow);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28), inset 0 1px 0 var(--highlight);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
   animation: console-enter 0.55s 0.05s ease both;
 }
 
-.mode-tab {
-  color: var(--text-soft) !important;
-  border: 1px solid transparent;
-}
-.mode-tab:hover { color: var(--text-main) !important; background: var(--panel-hover) !important; }
-.mode-tab.bg-cyan-600 {
-  background: var(--accent-strong) !important;
-  color: var(--app-bg) !important;
-  box-shadow: 0 0 24px var(--accent-soft), inset 0 1px 0 rgba(255,255,255,0.18);
+.tab-active-indicator {
+  position: absolute;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  left: 0.35rem;
+  width: calc((100% - 0.7rem) / 3);
+  border-radius: 999px;
+  background: var(--accent-strong);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 4px 20px var(--accent-soft), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transform: translateX(calc(var(--tab-index) * 100%));
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), background 0.35s ease;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.dashboard-main { animation: content-enter 0.65s 0.08s ease both; }
+.mode-tab {
+  position: relative;
+  z-index: 2;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--text-soft) !important;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: color 0.28s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+.mode-tab:hover {
+  color: var(--text-main) !important;
+}
+.mode-tab.active {
+  color: var(--app-bg) !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-main {
+  animation: royal-tab-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes royal-tab-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 /* Theme the existing component surfaces without changing their structure or
    evidence content. */
