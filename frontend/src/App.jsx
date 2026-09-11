@@ -7,6 +7,7 @@ import DriftCard from "./components/DriftCard";
 import CertificateViewer from "./components/CertificateViewer";
 import ImageSentinelCard from "./components/ImageSentinelCard";
 import DatasetForensicsCard from "./components/DatasetForensicsCard";
+import ronoreyeImg from "./assets/ronoreye.jpeg";
 import "./App.css";
 
 const THEME_OPTIONS = [
@@ -136,9 +137,14 @@ export default function App() {
     <div className="app-shell min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start p-6 space-y-6">
       {/* Top Console Bar */}
       <header className="top-console max-w-6xl w-full flex items-center justify-between border-b border-slate-800 pb-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl text-cyan-400">
-            <Shield className="w-8 h-8" />
+        <div className="flex items-center space-x-3.5">
+          <div className="ronova-avatar-shell relative flex items-center justify-center">
+            <div className="ronova-avatar-aura" aria-hidden="true" />
+            <img
+              src={ronoreyeImg}
+              alt="Ronova Eye"
+              className="ronova-avatar-img w-11 h-11 object-cover rounded-2xl border border-white/20 relative z-10 shadow-xl"
+            />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight text-white">RONOVA Console</h1>
