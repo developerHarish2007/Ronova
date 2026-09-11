@@ -78,30 +78,30 @@
   }
 }
 
-/* Theme-Specific Opposite & Auraish Glow Colors (Compact & Clean) */
+/* Theme-Specific Tone-Matched Aura Glow Colors */
 :root,
 [data-theme="cyber"] .ronova-avatar-aura {
-  /* Cyber (cyan base) -> Subtle Magenta/Purple cosmic aura */
-  background: radial-gradient(circle, #f43f5e 0%, #c084fc 50%, #06b6d4 100%);
-  box-shadow: 0 0 14px rgba(244, 63, 94, 0.45), 0 0 24px rgba(192, 132, 252, 0.25);
+  /* Cyber -> Luminous Electric Cyan aura (lighter than dark bg) */
+  background: radial-gradient(circle, #22d3ee 0%, #06b6d4 55%, rgba(6, 182, 212, 0.2) 100%);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.55), 0 0 28px rgba(6, 182, 212, 0.28);
 }
 
 [data-theme="mono"] .ronova-avatar-aura {
-  /* Mono -> Pure Pearl Iridescent / Silver aura */
-  background: radial-gradient(circle, #ffffff 0%, #cbd5e1 60%, rgba(255, 255, 255, 0.15) 100%);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.5), 0 0 24px rgba(203, 213, 225, 0.2);
+  /* Mono -> Pure Luminous Platinum/Silver aura (lighter than dark bg) */
+  background: radial-gradient(circle, #f8fafc 0%, #e2e8f0 55%, rgba(255, 255, 255, 0.15) 100%);
+  box-shadow: 0 0 15px rgba(248, 250, 252, 0.55), 0 0 26px rgba(226, 232, 240, 0.25);
 }
 
 [data-theme="white"] .ronova-avatar-aura {
-  /* White -> Royal Azure / Deep Ocean Blue contrast aura (No Red) */
-  background: radial-gradient(circle, #0284c7 0%, #38bdf8 55%, #0369a1 100%);
-  box-shadow: 0 0 14px rgba(2, 132, 199, 0.4), 0 0 22px rgba(56, 189, 248, 0.2);
+  /* White -> Deeper Ocean Slate/Cyan aura (darker than light bg for crisp depth) */
+  background: radial-gradient(circle, #0e7490 0%, #0891b2 55%, rgba(14, 116, 144, 0.2) 100%);
+  box-shadow: 0 0 16px rgba(14, 116, 144, 0.35), 0 0 26px rgba(8, 145, 178, 0.18);
 }
 
 [data-theme="silk"] .ronova-avatar-aura {
-  /* Silk (gold/amber base) -> Royal Emerald Jade & Golden Amber aura (No Red) */
-  background: radial-gradient(circle, #10b981 0%, #059669 50%, #d97706 100%);
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.45), 0 0 25px rgba(217, 119, 6, 0.25);
+  /* Silk -> Luminous Warm Gold & Champagne aura (lighter than dark bg) */
+  background: radial-gradient(circle, #f1dda6 0%, #d8bf84 55%, rgba(216, 191, 132, 0.2) 100%);
+  box-shadow: 0 0 16px rgba(241, 221, 166, 0.55), 0 0 28px rgba(216, 191, 132, 0.28);
 }
 
 .top-console-actions {

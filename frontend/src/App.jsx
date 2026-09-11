@@ -137,7 +137,7 @@ export default function App() {
     <div className="app-shell min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start p-6 space-y-6">
       {/* Top Console Bar */}
       <header className="top-console max-w-6xl w-full flex items-center justify-between border-b border-slate-800 pb-4">
-        <div className="flex items-center space-x-3.5">
+        <div className="flex items-center space-x-5 sm:space-x-6">
           <div className="ronova-avatar-shell relative flex items-center justify-center">
             <div className="ronova-avatar-aura" aria-hidden="true" />
             <img
