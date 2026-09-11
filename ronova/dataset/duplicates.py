@@ -84,11 +84,24 @@ class DuplicateDetector:
         num_dups = len(duplicate_pairs)
 
         if num_dups > 0:
-            risk = float(min(30.0 + num_dups * 15.0, 75.0))
+            # Calculate proportion of unique samples contaminated by duplication
+            dup_indices = set()
+            for pair in duplicate_pairs:
+                dup_indices.add(pair["sample_idx_1"])
+                dup_indices.add(pair["sample_idx_2"])
+            dup_ratio = len(dup_indices) / max(1, num_samples)
+
+            # Weight severity by match precision (Exact MD5 = 1.0, Near dHash = 1.0 - dist/8)
+            weighted_severity = sum(
+                1.0 if p["is_exact_match"] else max(0.2, 1.0 - p["hamming_distance"] / 8.0)
+                for p in duplicate_pairs
+            )
+            # Continuous calibrated risk formula
+            risk = round(min(95.0, max(15.0, 30.0 + (dup_ratio * 40.0) + min(30.0, weighted_severity * 2.0))), 1)
             finding = Finding(
                 detector_id="dataset_duplicate_detector",
                 finding_type="DATASET_DUPLICATE_SAMPLES",
-                risk_score=risk,
+                risk_score=float(risk),
                 evidence_strength=EvidenceStrength.MEDIUM,
                 title="Dataset Duplicate / Near-Duplicate Samples Detected",
                 explanation=(

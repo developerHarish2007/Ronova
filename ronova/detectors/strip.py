@@ -57,35 +57,34 @@ class STRIPDetector:
         num_test_samples = test_samples.shape[0]
         num_overlays = clean_overlays.shape[0]
 
-        all_entropies: List[float] = []
-        sample_summaries: List[Dict[str, Any]] = []
-
-        total_sandbox_meta = {}
-
+        # --- Build all blended variants in one go (N_samples x N_perturbations batched) ---
+        all_blended = []  # list of (1, ...) arrays, one per perturbation per sample
+        sample_slice_map = []  # track which indices in the flat batch belong to which sample
+        idx = 0
+        rand_index_map = []
         for i in range(num_test_samples):
-            test_img = test_samples[i : i + 1] # shape (1, ...)
-
-            # Generate N perturbed variants by blending test_img with random clean overlays
+            test_img = test_samples[i : i + 1]
             rand_indices = np.random.choice(num_overlays, size=self.num_perturbations, replace=True)
-            overlays_selected = clean_overlays[rand_indices] # shape (N_pert, ...)
+            rand_index_map.append(rand_indices)
+            overlays_selected = clean_overlays[rand_indices]
+            blended = (self.blend_alpha * test_img + (1.0 - self.blend_alpha) * overlays_selected).astype(np.float32)
+            all_blended.append(blended)
+            sample_slice_map.append((idx, idx + self.num_perturbations))
+            idx += self.num_perturbations
 
-            # Linear superimposition: I_blend = alpha * I_test + (1 - alpha) * I_overlay
-            blended_variants = (
-                self.blend_alpha * test_img + (1.0 - self.blend_alpha) * overlays_selected
-            ).astype(np.float32)
+        # Single batched sandbox call — one subprocess spawn for the entire scan
+        full_batch = np.concatenate(all_blended, axis=0)  # shape: (N*P, C, H, W)
+        all_probs, sandbox_meta = self.sandbox.run_inference(model_path, full_batch)
 
-            # Pass blended variants through Isolated Sandbox
-            probs, sandbox_meta = self.sandbox.run_inference(model_path, blended_variants)
-            total_sandbox_meta = sandbox_meta
-
-            # Calculate entropy per variant
-            variant_entropies = self.compute_shannon_entropy(probs)
+        # Slice results back per sample
+        all_entropies: list = []
+        sample_summaries = []
+        for i, (start, end) in enumerate(sample_slice_map):
+            sample_probs = all_probs[start:end]
+            variant_entropies = self.compute_shannon_entropy(sample_probs)
             mean_sample_entropy = float(np.mean(variant_entropies))
             all_entropies.extend([float(e) for e in variant_entropies])
-
-            # Top predicted classes for variant summary
-            top_classes = np.argmax(probs, axis=-1).tolist()
-
+            top_classes = np.argmax(sample_probs, axis=-1).tolist()
             sample_summaries.append({
                 "sample_index": i,
                 "mean_entropy": mean_sample_entropy,
@@ -165,4 +164,4 @@ class STRIPDetector:
             finding=finding,
         )
 
-        return strip_result, total_sandbox_meta
+        return strip_result, sandbox_meta

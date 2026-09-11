@@ -16,7 +16,6 @@ export default function App() {
   const [datasetResult, setDatasetResult] = useState(null);
   const [imageResult, setImageResult] = useState(null);
   const [resourceProfile, setResourceProfile] = useState("Standard");
-  const [datasetRole, setDatasetRole] = useState("training_eval");
   const [error, setError] = useState(null);
 
   const handleFileChange = (e) => {
@@ -66,7 +65,7 @@ export default function App() {
     formData.append("file", selectedFile);
 
     try {
-      const response = await fetch(`http://localhost:8000/scan/dataset?role=${datasetRole}`, {
+      const response = await fetch("http://localhost:8000/scan/dataset", {
         method: "POST",
         body: formData,
       });
@@ -246,18 +245,6 @@ export default function App() {
               </div>
 
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 text-xs font-mono">
-                  <span className="text-slate-400 font-semibold">Declared Role:</span>
-                  <select
-                    value={datasetRole}
-                    onChange={(e) => setDatasetRole(e.target.value)}
-                    className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-cyan-400 font-bold focus:outline-none focus:border-cyan-500 cursor-pointer"
-                  >
-                    <option value="training_eval">Training / Evaluation Dataset</option>
-                    <option value="perturbation_overlay">Perturbation Reference Overlay</option>
-                    <option value="live_input_batch">Live Inference Input Batch</option>
-                  </select>
-                </div>
 
                 <button
                   onClick={handleScanDataset}

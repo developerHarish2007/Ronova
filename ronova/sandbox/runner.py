@@ -16,7 +16,7 @@ class IsolatedSandboxRunner:
     - Otherwise: Subprocess isolation executing ONNX Runtime in a dedicated worker process with CPU-only execution, wall-clock timeout enforcement, and batch limits.
     """
 
-    def __init__(self, timeout_seconds: float = 10.0, max_batch_size: int = 128):
+    def __init__(self, timeout_seconds: float = 60.0, max_batch_size: int = 10000):
         self.timeout_seconds = float(timeout_seconds)
         self.max_batch_size = max_batch_size
         self.docker_available = self._check_docker_available()

@@ -349,7 +349,13 @@ async def scan_dataset(
 
         has_issues = len(dup_pairs) > 0 or len(anom_indices) > 0
         dataset_risk = "REVIEW" if has_issues else "ACCEPT"
-        overall_risk = max(dup_finding.risk_score, anom_finding.risk_score) if has_issues else 0.0
+        if has_issues:
+            if len(dup_pairs) > 0 and len(anom_indices) > 0:
+                overall_risk = round(min(98.0, max(dup_finding.risk_score, anom_finding.risk_score) + 0.15 * min(dup_finding.risk_score, anom_finding.risk_score)), 1)
+            else:
+                overall_risk = round(max(dup_finding.risk_score, anom_finding.risk_score), 1)
+        else:
+            overall_risk = 0.0
 
         if not has_issues:
             if active_role == "perturbation_overlay":

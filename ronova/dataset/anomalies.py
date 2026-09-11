@@ -149,10 +149,18 @@ class AnomalyDetector:
         ]
 
         if num_anomalies > 0:
+            anom_ratio = num_anomalies / max(1, num_samples)
+            # Calculate how severe the anomaly scores deviate beyond the threshold
+            score_deviations = [max(0.0, self.score_threshold - float(scores[idx])) for idx in anomalous_indices]
+            mean_deviation = float(np.mean(score_deviations)) if score_deviations else 0.0
+
+            # Calibrated continuous anomaly risk (proportional to anomaly volume and outlier distance)
+            anom_risk = round(min(95.0, max(20.0, 35.0 + (anom_ratio * 45.0) + (mean_deviation * 300.0))), 1)
+
             finding = Finding(
                 detector_id="dataset_anomaly_detector",
                 finding_type="DATASET_ANOMALY_INDICATOR",
-                risk_score=min(45.0 + num_anomalies * 5.0, 85.0),
+                risk_score=float(anom_risk),
                 evidence_strength=EvidenceStrength.MEDIUM,
                 title="Dataset Embedding Anomaly Clusters Detected",
                 explanation=(

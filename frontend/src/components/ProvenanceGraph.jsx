@@ -12,7 +12,7 @@ export default function ProvenanceGraph({ provenanceManifest, signedCheckpoint }
       { id: "model_hash", label: "Model Hash", val: provenanceManifest.model_hash, x: 260, y: 50 },
       { id: "config_hash", label: "Config Hash", val: provenanceManifest.config_hash, x: 470, y: 50 },
       { id: "preprocess_hash", label: "Preprocess Hash", val: provenanceManifest.preprocess_hash, x: 680, y: 50 },
-      
+
       { id: "runtime_hash", label: "Runtime Hash", val: provenanceManifest.runtime_hash, x: 50, y: 160 },
       { id: "input_hash", label: "Input Hash", val: provenanceManifest.input_hash, x: 260, y: 160 },
       { id: "output_hash", label: "Output Hash", val: provenanceManifest.output_hash, x: 470, y: 160 },
