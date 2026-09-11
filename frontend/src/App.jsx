@@ -253,6 +253,7 @@ export default function App() {
                   sha256={result.sha256}
                   filename={result.filename}
                   manifestVerification={result.manifest_verification}
+                  graphFirewall={result.graph_firewall}
                 />
                 <PerturbationViz stripAnalysis={result.strip_analysis} />
                 <ProvenanceGraph

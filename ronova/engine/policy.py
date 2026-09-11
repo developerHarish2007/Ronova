@@ -48,6 +48,7 @@ class PolicyEngine:
         "UNSAFE_SERIALIZATION_INDICATOR",
         "BROKEN_AUDIT_CHAIN",
         "TROJAN_BEHAVIOR_INDICATOR",
+        "ONNX_GRAPH_FIREWALL",
     }
 
     def evaluate(

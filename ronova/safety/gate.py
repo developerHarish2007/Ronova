@@ -13,6 +13,7 @@ from ronova.core.types import (
     EvidenceStrength,
     SafetyGateResult,
 )
+from ronova.safety.graph_firewall import ONNXGraphFirewall
 
 
 class SafetyGate:
@@ -22,9 +23,10 @@ class SafetyGate:
     invokes ModelScan for static malicious serialization checks, and enforces strict ONNX graph/loadability validation.
     """
 
-    def __init__(self, manifest_path: str = "manifests/approved_models.json"):
+    def __init__(self, manifest_path: str = "manifests/approved_models.json", graph_firewall: ONNXGraphFirewall = None):
         self.modelscanner = ModelScan()
         self.manifest_path = Path(manifest_path).resolve()
+        self.graph_firewall = graph_firewall or ONNXGraphFirewall()
 
     def compute_sha256(self, file_path: str) -> str:
         sha256_hash = hashlib.sha256()
@@ -106,7 +108,15 @@ class SafetyGate:
                 "elem_type": out.type.tensor_type.elem_type if out.type.HasField("tensor_type") else 0,
             })
 
-        # 4. ONNX Runtime Session Loadability Check (CPU provider config)
+        # 4. Static ONNX Graph Firewall Inspection
+        firewall_result = self.graph_firewall.inspect_graph(model)
+        if not firewall_result.passed:
+            return False, "GRAPH_FIREWALL_BLOCKED", {
+                "error": f"ONNX Graph Firewall violation: {'; '.join(firewall_result.violations)}",
+                "graph_firewall": firewall_result.model_dump(),
+            }
+
+        # 5. ONNX Runtime Session Loadability Check (CPU provider config)
         try:
             opts = ort.SessionOptions()
             opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
@@ -117,7 +127,8 @@ class SafetyGate:
             session = ort.InferenceSession(file_path, opts, providers=["CPUExecutionProvider"])
         except Exception as e:
             return False, "ONNX_RUNTIME_LOAD_ERROR", {
-                "error": f"ONNX Runtime failed to load session: {str(e)}"
+                "error": f"ONNX Runtime failed to load session: {str(e)}",
+                "graph_firewall": firewall_result.model_dump(),
             }
 
         details = {
@@ -130,6 +141,7 @@ class SafetyGate:
             "inputs": input_details,
             "outputs": output_details,
             "providers_used": session.get_providers(),
+            "graph_firewall": firewall_result.model_dump(),
         }
         return True, "VALID_ONNX_MODEL", details
 
@@ -165,24 +177,42 @@ class SafetyGate:
 
         if not is_onnx_valid:
             hard_gate_triggered = True
-            gate_findings.append(
-                Finding(
-                    detector_id="safety_gate_format",
-                    finding_type="INVALID_FILE_FORMAT",
-                    risk_score=100.0,
-                    evidence_strength=EvidenceStrength.HIGH,
-                    title="Invalid Artifact Format",
-                    explanation=f"Uploaded artifact failed ONNX structural validation: {onnx_details.get('error', onnx_status)}",
-                    limitations="Validates ONNX graph schema, input/output definitions, and ONNX Runtime loadability; does not perform dynamic behavioral analysis.",
-                    evidence_details={
-                        "file_path": model_path,
-                        "is_onnx_valid": False,
-                        "onnx_status": onnx_status,
-                        "validation_error": onnx_details.get("error"),
-                    },
-                    is_hard_gate=True,
+            if onnx_status == "GRAPH_FIREWALL_BLOCKED":
+                gate_findings.append(
+                    Finding(
+                        detector_id="onnx_graph_firewall",
+                        finding_type="ONNX_GRAPH_FIREWALL",
+                        risk_score=100.0,
+                        evidence_strength=EvidenceStrength.HIGH,
+                        title="ONNX Graph Firewall Violation",
+                        explanation=f"Static ONNX Graph Firewall blocked artifact: {onnx_details.get('error', onnx_status)}",
+                        limitations="Static operator allowlist and input boundary inspection; does not execute model code.",
+                        evidence_details=onnx_details.get("graph_firewall", {
+                            "status": onnx_status,
+                            "error": onnx_details.get("error"),
+                        }),
+                        is_hard_gate=True,
+                    )
                 )
-            )
+            else:
+                gate_findings.append(
+                    Finding(
+                        detector_id="safety_gate_format",
+                        finding_type="INVALID_FILE_FORMAT",
+                        risk_score=100.0,
+                        evidence_strength=EvidenceStrength.HIGH,
+                        title="Invalid Artifact Format",
+                        explanation=f"Uploaded artifact failed ONNX structural validation: {onnx_details.get('error', onnx_status)}",
+                        limitations="Validates ONNX graph schema, input/output definitions, and ONNX Runtime loadability; does not perform dynamic behavioral analysis.",
+                        evidence_details={
+                            "file_path": model_path,
+                            "is_onnx_valid": False,
+                            "onnx_status": onnx_status,
+                            "validation_error": onnx_details.get("error"),
+                        },
+                        is_hard_gate=True,
+                    )
+                )
 
         # Approved Manifest Check (never compare a model hash to itself)
         manifest_matched, manifest_status = self.verify_manifest(sha256)

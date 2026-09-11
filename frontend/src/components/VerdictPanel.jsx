@@ -1,7 +1,7 @@
 import React from "react";
 import { ShieldCheck, ShieldAlert, AlertTriangle, CheckCircle2, Lock, Cpu } from "lucide-react";
 
-export default function VerdictPanel({ policy, sha256, filename, manifestVerification }) {
+export default function VerdictPanel({ policy, sha256, filename, manifestVerification, graphFirewall }) {
   if (!policy) return null;
 
   const { verdict, risk_score, evidence_strength, hard_gate_fired, hard_gates_triggered, findings } = policy;
@@ -9,6 +9,13 @@ export default function VerdictPanel({ policy, sha256, filename, manifestVerific
   const isAccept = verdict === "ACCEPT";
   const isReview = verdict === "REVIEW";
   const isQuarantine = verdict === "QUARANTINE";
+
+  const firewallFinding = findings?.find(
+    (f) => f.finding_type === "ONNX_GRAPH_FIREWALL" || f.detector_id === "onnx_graph_firewall"
+  );
+  const isFirewallPassed = graphFirewall?.passed !== undefined
+    ? graphFirewall.passed
+    : !firewallFinding;
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl space-y-6">
@@ -52,7 +59,7 @@ export default function VerdictPanel({ policy, sha256, filename, manifestVerific
       </div>
 
       {/* Artifact Metadata Bar */}
-      <div className="grid grid-cols-3 gap-3 font-mono text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
         <div className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl">
           <div className="text-[10px] text-slate-500 uppercase">Target Artifact</div>
           <div className="font-semibold text-slate-200 truncate mt-0.5">{filename || "model.onnx"}</div>
@@ -65,6 +72,12 @@ export default function VerdictPanel({ policy, sha256, filename, manifestVerific
           <div className="text-[10px] text-slate-500 uppercase">Approved Manifest Status</div>
           <div className={`font-semibold truncate mt-0.5 ${manifestVerification?.manifest_matched ? "text-emerald-400" : "text-rose-400"}`}>
             {manifestVerification?.manifest_matched ? "MATCHED (OK)" : "MISMATCH (UNAPPROVED)"}
+          </div>
+        </div>
+        <div className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl">
+          <div className="text-[10px] text-slate-500 uppercase">Graph Firewall</div>
+          <div className={`font-semibold truncate mt-0.5 ${isFirewallPassed ? "text-emerald-400" : "text-rose-400"}`}>
+            {isFirewallPassed ? "PASSED" : "BLOCKED"}
           </div>
         </div>
       </div>

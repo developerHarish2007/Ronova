@@ -222,6 +222,7 @@ async def scan_model(file: UploadFile = File(...)) -> Dict[str, Any]:
             "provenance_manifest": provenance_manifest,
             "signed_checkpoint": signed_checkpoint,
             "canonical_certificate": canonical_cert,
+            "graph_firewall": safety_result.onnx_validation_details.get("graph_firewall", {}),
         }
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
