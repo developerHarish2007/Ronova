@@ -17,7 +17,7 @@ class STRIPDetector:
     Overlays test samples with reference clean patterns.
     Clean models display high prediction entropy across perturbations.
     Backdoored models exhibit suppressed entropy because the model locks onto
-    the trigger pattern regardless of overlay noise.
+    the embedded trigger behavior regardless of overlay noise.
     """
 
     def __init__(
@@ -111,11 +111,10 @@ class STRIPDetector:
                     f"STRIP behavioral analysis detected suppressed entropy under perturbation "
                     f"(Mean Entropy: {mean_overall_entropy:.4f} < Threshold: {self.entropy_threshold:.4f}). "
                     f"Model prediction locked onto a single target state despite heavy visual overlay blending, "
-                    f"behavior consistent with a Trojan / backdoor trigger."
+                    f"behavior consistent with a backdoor trigger."
                 ),
                 limitations=(
-                    "STRIP behavioral entropy analysis detects backdoor trigger suppression under perturbation; "
-                    "it does not localize or reconstruct white-box trigger heatmaps."
+                    "STRIP behavioral entropy analysis evaluates perturbation stability without claiming exact trigger localization."
                 ),
                 evidence_details={
                     "mean_entropy": mean_overall_entropy,

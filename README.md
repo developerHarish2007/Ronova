@@ -1,226 +1,203 @@
-# RONOVA (Robust Offline Network for Observation, Verification & Assurance)
+﻿# 🛡️ RONOVA — Autonomous AI Assurance & Cryptographic Provenance Engine
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
-[![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![FastAPI: 0.100+](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![ONNX: Supported](https://img.shields.io/badge/ONNX-Static%20%26%20Runtime-orange.svg)](https://onnx.ai/)
-[![Security: Offline-First](https://img.shields.io/badge/Security-100%25%20Offline%20%2F%20Air--Gapped-green.svg)](#threat-model--design-principles)
-[![Cryptography: Ed25519](https://img.shields.io/badge/Trust%20Root-Ed25519%20Signed-purple.svg)](#cryptographic-assurance--offline-verifier)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![ONNX Runtime](https://img.shields.io/badge/ONNX_Runtime-005CED?style=for-the-badge&logo=onnx&logoColor=white)](https://onnxruntime.ai)
+[![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-> **RONOVA** is an offline, air-gapped AI assurance and governance framework designed to statically inspect, sandboxed-evaluate, cryptographically verify, and certify Computer Vision models and training datasets without relying on cloud APIs, online dependencies, or external telemetry.
+> **RONOVA** is an end-to-end, air-gapped AI assurance, security vetting, and cryptographic provenance platform designed for safety-critical machine learning deployments (Defense, Healthcare, Finance, and Enterprise Infrastructure).
 
 ---
 
-## Key Capabilities & Architectural Pillars
+## 🌟 Why RONOVA?
 
-RONOVA implements a multi-stage defense-in-depth pipeline that ensures complete traceability, deterministic reproducibility, and fail-closed security for machine learning deployments.
+Modern machine learning supply chains are vulnerable to **data poisoning**, **Trojan backdoors**, **adversarial perturbations**, **data leakage**, and **covert weight tampering**. 
+
+RONOVA provides automated, deterministic pre-deployment validation, runtime anomaly detection, and tamper-evident audit trails with zero reliance on cloud verification.
 
 ```
-                                  [ Incoming Model / Dataset / Image ]
-                                                   │
-                                                   ▼
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 1. OFFLINE STATIC SAFETY GATE & ONNX GRAPH FIREWALL                                              │
-│    • SHA-256 Digest Computation                                                                 │
-│    • Protobuf & Graph Schema Validation                                                          │
-│    • Static Operator Allowlisting (STANDARD_SAFE_OPERATORS) & Domain Verification               │
-│    • Input Dimension & Memory Budget Enforcement                                                 │
-│    • Out-of-Band Approved Manifest Check (manifests/approved_models.json)                        │
-│    • ModelScan Static Serialization & Pickle AST Analysis                                        │
-└────────────────────────────────────────────────┬─────────────────────────────────────────────────┘
-                                                   │ (Pass: Continue | Fail: Instant Hard-Gate QUARANTINE)
-                                                   ▼
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 2. ISOLATED SUBPROCESS SANDBOX & BEHAVIORAL ANALYSIS (STRIP)                                     │
-│    • Subprocess Execution Barrier (Memory Limits, Isolated CPU Execution Provider)              │
-│    • Standardized Trojan Evaluation Protocol (STRIP Perturbation & Shannon Entropy)              │
-│    • Kolmogorov-Smirnov (KS) Input Distribution Drift Analysis                                   │
-└────────────────────────────────────────────────┬─────────────────────────────────────────────────┘
-                                                   │
-                                                   ▼
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 3. MULTI-LAYER GOVERNANCE & POLICY ENGINE                                                        │
-│    • Level 1 Hard Gates: Manifest Mismatch, Graph Firewall Violation, Malicious Serialization,  │
-│      Broken Audit Chain, Trojan Indicator Breach -> Instant QUARANTINE (Never Averaged Away)     │
-│    • Level 2 Weighted Risk Evaluation: Aggregated Risk Score (0-100) -> ACCEPT / REVIEW          │
-└────────────────────────────────────────────────┬─────────────────────────────────────────────────┘
-                                                   │
-                                                   ▼
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 4. CRYPTOGRAPHIC PROVENANCE & IMMUTABLE AUDIT LEDGER                                             │
-│    • 8-Field Deterministic Provenance Manifest Hashing                                           │
-│    • SHA-256 Sequential Hash-Linked Audit Event Ledger                                           │
-│    • Signed Checkpoints & Canonical JSON Encoding                                                │
-│    • Ed25519 Asymmetric Signed Certificates with Embedded QR Codes                              │
-│    • Standalone Air-Gapped CLI Verifier (`verify_certificate.py`)                                │
-└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+                  ┌────────────────────────────────────────────────────────┐
+                  │                RONOVA ASSURANCE PIPELINE               │
+                  └───────────────────────────┬────────────────────────────┘
+                                              │
+      ┌─────────────────────────┬─────────────┴────────────┬────────────────────────┐
+      ▼                         ▼                          ▼                        ▼
+┌──────────────┐       ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│   Dataset    │       │     STRIP       │       │ Image Sentinel  │       │  Distribution   │
+│  Forensics   │       │ Trojan Detector │       │  Robustness     │       │ Drift Analysis  │
+└──────┬───────┘       └────────┬────────┘       └────────┬────────┘       └────────┬────────┘
+       │                        │                         │                         │
+       └────────────────────────┼─────────────────────────┴─────────────────────────┘
+                                ▼
+               ┌─────────────────────────────────┐
+               │    Deterministic Safety Gate    │  ◄── Multi-Profile Governance
+               │   (Defense / Health / Corp)     │
+               └────────────────┬────────────────┘
+                                ▼
+               ┌─────────────────────────────────┐
+               │ Tamper-Evident Ledger (Ed25519) │  ──► Signed QR Certificates
+               └─────────────────────────────────┘
 ```
 
 ---
 
-## Detailed Component Breakdown
+## 🚀 Key Modules & Capabilities
 
-### 1. Offline Static ONNX Graph Firewall
-- **Static Inspection Only**: Never executes model code or instantiates execution providers during structural inspection.
-- **Strict Operator Allowlist**: Enforces standard safe ONNX operators (`STANDARD_SAFE_OPERATORS`), blocking custom, unapproved, or experimental operator registrations.
-- **Domain Enforcement**: Disallows unapproved operator domains (`APPROVED_DOMAINS = {"", "ai.onnx", "ai.onnx.ml"}`).
-- **Tensor Dimension Budgeting**: Validates input tensor dimensions against configurable bounds (`max_input_elements`, `max_dimension_size`, `max_nodes`) to protect against memory exhaustion and allocation bombs.
-- **Fail-Closed Hard Gate**: Violations emit `ONNX_GRAPH_FIREWALL` hard gate findings, instantly triggering `QUARANTINE` and bypassing downstream behavioral execution.
+### 1. 🔍 Dataset Forensics & Outlier Inspection
+* **Embedding-Space Anomaly Detection**: Employs an offline CNN feature extractor and calibrated Isolation Forest clustering to detect poisoned samples and mislabeled data.
+* **Dimensionality Reduction (PCA 2D)**: Visualizes high-dimensional dataset clustering in an interactive coordinate scatter space.
+* **Visual Outlier Thumbnails**: Generates lightweight base64 thumbnail previews for flagged anomalous samples.
+* **Exact & Near-Duplicate Analysis**: Identifies data leakage and training contamination using perceptual hashing and vector similarity thresholds.
 
-### 2. Model Safety Gate & Manifest Verification
-- **Cryptographic Digest**: Computes deterministic SHA-256 hash of uploaded artifacts.
-- **Out-of-Band Manifest Validation**: Compares model digest against approved institutional manifests (`manifests/approved_models.json`).
-- **ModelScan Static Serialization Inspection**: Detects unsafe Python serialization constructs (e.g., `pickle`, arbitrary code execution vectors) prior to runtime loading.
+### 2. 🧬 STRIP Trojan & Backdoor Detection
+* Implements **STRIP** (*Strong Perturbation Trojan Detection*): Superimposes clean image overlays onto candidate test inputs and measures the Shannon entropy collapse across model output probability vectors.
+* **Entropy Drop Isolation**: Backdoored inputs maintain low prediction entropy regardless of noise overlays, cleanly exposing Trojan triggers without needing training data access.
 
-### 3. Isolated Sandbox & STRIP Behavioral Analysis
-- **Subprocess Isolation**: Executes models in dedicated subprocesses with strict resource controls and sequential CPU execution provider configurations.
-- **STRIP (STRong Intentional Perturbation)**: Evaluates Trojan and backdoor susceptibility by blending live inputs with clean reference overlays (`clean_overlays.npy`) and measuring output Shannon entropy distributions.
+### 3. 🎯 Image Sentinel & Adversarial Defense
+* Detects high-frequency adversarial gradient attacks (FGSM, PGD) and distribution corruption.
+* Measures prediction stability across varying noise scales ($\sigma \in [0.05, 0.20]$).
+* Provides visual pixel-level perturbation heatmaps and channel-wise variance maps.
 
-### 4. Forensic Dataset Analysis
-- **Perceptual & Cryptographic Duplicate Scanning**: Identifies exact hash collisions (MD5) and near-duplicate images using difference hashing (`dHash`) and calibrated Mean Squared Error (MSE).
-- **Embedding-Space Anomaly Detection**: Extracts CNN feature embeddings and computes statistical anomaly scores via Isolation Forests to identify poisoned samples or corrupt data.
-- **Role-Calibrated Protocols**: Custom forensic thresholds for `training_eval`, `perturbation_overlay`, and `live_input_batch` dataset roles.
+### 4. 📈 Statistical Distribution Drift Monitor
+* Detects inference data shift using **Wasserstein Distance** and **Kolmogorov-Smirnov (KS) tests**.
+* Computes feature-level drift scores to alert teams before downstream model accuracy degrades.
 
-### 5. Image Sentinel Live Input Defense
-- **EXIF & Metadata Sanitization**: Strips hidden tags, location coordinates, and malformed headers.
-- **Structural Decoding Validation**: Enforces maximum dimension, channel count, and file size limits across configurable resource profiles (`Standard` vs `Demo`).
-- **Perceptual Image Integrity**: Computes SHA-256 canonical digests and dHash fingerprints before feeding inputs to model pipelines.
+### 5. ⚖️ Multi-Profile Safety Governance Gate
+* Configurable risk profiles:
+  * 🛡️ **Defense / Tactical**: Zero-tolerance strict gating (Rejection on any hard-gate indicator).
+  * 🏥 **Healthcare / Life Sciences**: Stringent anomaly boundaries and drift limits.
+  * 🏢 **Enterprise / Standard**: Balanced trade-off between throughput and assurance.
+* Explains all findings with deterministic rationale, limitation disclosures, and explicit evidence strength ratings.
 
-### 6. Cryptographic Provenance & Offline Audit Ledger
-- **8-Field Canonical Provenance Manifest**: Deterministically captures:
-  1. `model_sha256`
-  2. `dataset_sha256`
-  3. `config_sha256`
-  4. `environment_sha256`
-  5. `pipeline_stage`
-  6. `input_sha256`
-  7. `output_sha256`
-  8. `timestamp`
-- **Immutable Hash-Linked Ledger**: Every evaluation is appended to a cryptographic ledger where each event is chained to the SHA-256 digest of the previous record.
-- **Ed25519 Canonical Certificates**: Generates cryptographically signed JSON certificates and scannable QR verification payloads.
+### 6. 🔏 Cryptographic Audit Ledger & QR Verification
+* Every scan event is committed to a hash-chained audit log signed via **Ed25519** asymmetric cryptography.
+* Produces portable, self-contained **Security Verification Certificates** with cryptographically signed payload QR codes.
+* Includes a standalone verification tool (`verify_certificate.py`) capable of proving certificate authenticity offline without network connectivity.
 
 ---
 
-## Directory Structure
+## 🛠️ System Architecture & Stack
 
-```
-Ronova/
-├── ronova/                     # Core Assurance Framework Package
-│   ├── api/                    # FastAPI HTTP service & endpoints
-│   ├── core/                   # Shared Pydantic data models & typing contracts
-│   ├── dataset/                # Forensics (duplicate & anomaly detectors)
-│   ├── detectors/              # STRIP behavioral detector & Image Sentinel
-│   ├── engine/                 # Multi-layer governance & policy engine
-│   ├── operations/             # Statistical drift analysis (Kolmogorov-Smirnov)
-│   ├── provenance/             # Ed25519 crypto, ledger, and certificate builder
-│   ├── safety/                 # Safety gate & static ONNX graph firewall
-│   └── sandbox/                # Subprocess runner & isolation sandbox
-├── frontend/                   # React + Vite + TailwindCSS Assurance Console
-│   ├── src/
-│   │   ├── components/         # Verdict, Perturbation, Provenance, Sentinel UI
-│   │   └── App.jsx             # Multi-theme assurance dashboard
-├── manifests/                  # Approved model manifests & hashes
-├── models/                     # Sample clean & backdoored ONNX classifiers
-├── data/                       # Reference evaluation & calibration datasets
-├── scripts/                    # Pytest suites & end-to-end regression scripts
-├── trust/                      # Public keys & trusted root anchors
-├── secrets/                    # Local signing keys (air-gapped)
-├── verify_certificate.py       # Standalone air-gapped certificate verifier CLI
-├── requirements.txt            # Python dependencies
-└── README.md                   # System documentation
-```
+| Layer | Technologies Used |
+|---|---|
+| **Core AI & Math** | PyTorch, ONNX Runtime, NumPy, Scikit-learn, SciPy |
+| **Backend API** | FastAPI, Uvicorn, Pydantic v2 |
+| **Cryptography** | `cryptography` (Ed25519, SHA-256), `qrcode`, `Pillow` |
+| **Frontend UI** | React 18, Vite, Tailwind CSS, Lucide Icons, Recharts |
+| **Sandboxing** | Python Subprocess Workers, Resource-Capped Memory/CPU Execution |
 
 ---
 
-## Quickstart Guide
+## ⚡ Quick Start Guide
 
 ### Prerequisites
-- **Python 3.10+** (Tested on Python 3.10 – 3.14)
-- **Node.js 18+** & `npm` (for the Frontend Console)
+* Python 3.10+
+* Node.js 18+ and npm
 
-### 1. Installation
-Clone the repository and install the backend dependencies:
+### 1. Clone & Set Up Backend
 ```bash
+# Clone the repository
 git clone https://github.com/developerHarish2007/Ronova.git
 cd Ronova
-pip install -r requirements.txt
+
+# Create and activate virtual environment
+python -m venv venv
+# On Windows:
+.\venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt   # or pip install fastapi uvicorn torch onnxruntime numpy scikit-learn pillow cryptography qrcode
 ```
 
-### 2. Initialize Keys & Demo Datasets (Optional / Setup)
-If running for the first time or creating fresh keys:
+### 2. Initialize Keys & Demo Artifacts
 ```bash
+# Generate Ed25519 provenance root keys
 python scripts/init_provenance_keys.py
+
+# Create synthetic evaluation models and sample datasets
+python scripts/train_models.py
 python scripts/create_demo_datasets.py
-python scripts/create_manifest.py
 ```
 
-### 3. Start the Backend API Server
+### 3. Launch the Backend API
 ```bash
-python -m uvicorn ronova.api.main:app --host 127.0.0.1 --port 8000
+python -m uvicorn ronova.api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-The REST API will be available at `http://127.0.0.1:8000`. Interactive OpenAPI documentation is accessible at `http://127.0.0.1:8000/docs`.
+* Interactive Swagger Docs: **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**
 
-### 4. Start the Frontend Dashboard
-In a separate terminal:
+### 4. Launch the Frontend UI
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open `http://localhost:5173` in your browser to interact with the RONOVA Console.
+* Web Dashboard: **[http://localhost:5173/](http://localhost:5173/)**
 
 ---
 
-## API Reference Summary
+## 🧪 Testing & Verification
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/scan/model` | Full model assurance pipeline: static Graph Firewall, SafetyGate, STRIP sandbox, drift, policy verdict, provenance ledger, and Ed25519 signed certificate. |
-| `POST` | `/scan/dataset` | Forensic analysis of `.npy`/`.npz` datasets: perceptual duplicate detection and embedding-space anomaly scoring. |
-| `POST` | `/scan/image` | Image Sentinel intake: EXIF sanitization, structural verification, and signed intake checkpointing. |
-| `GET` | `/verify/certificate` | Verifies Ed25519 signatures and audit ledger payload integrity. |
-| `POST` | `/log/inference` | Logs live inference records to the sequential cryptographic audit chain. |
-| `POST` | `/check/input` | Evaluates input distribution drift using two-sample Kolmogorov-Smirnov tests. |
-| `GET` | `/health` | Healthcheck and framework metadata. |
-
----
-
-## Standalone Air-Gapped Certificate Verification
-
-RONOVA certificates can be verified completely offline using the standalone CLI script `verify_certificate.py` without requiring network access or the API server to be running:
+Run the automated test harnesses to validate individual modules:
 
 ```bash
-python verify_certificate.py --cert path/to/certificate.json --public-key trust/public_key.pem
-```
+# Test Dataset Forensics & Anomaly Isolation
+python scripts/test_dataset_forensics.py
 
----
+# Test Cryptographic Provenance & Ledger Chains
+python scripts/test_provenance.py
+python scripts/test_audit_ledger.py
 
-## Running the Test Suite
+# Test STRIP Backdoor Detection
+python scripts/test_image_sentinel.py
 
-RONOVA includes an exhaustive suite of unit and regression tests covering all security boundaries, firewalls, and cryptographic invariants:
-
-```bash
-# Run ONNX Graph Firewall tests
-pytest scripts/test_graph_firewall.py
-
-# Run all pytest suites
-pytest scripts/
-
-# Run complete phase 8 regression & reconciliation suite
+# Run Complete End-to-End Regression Suite
 python scripts/run_phase8_regression.py
 ```
 
 ---
 
-## Threat Model & Design Principles
+## 📁 Repository Structure
 
-1. **Strictly Offline & Air-Gapped**: Zero reliance on external cloud APIs, LLM inference endpoints, or telemetry.
-2. **Fail-Closed Governance**: If any Level 1 Hard Gate triggers (Graph Firewall violation, unapproved manifest hash, broken audit chain, unsafe serialization, or Trojan entropy collapse), the model is instantly assigned a `QUARANTINE` verdict that cannot be averaged away.
-3. **Static-Before-Dynamic**: Malicious model structures and unapproved operators are halted statically before any runtime session is initialized.
-4. **Cryptographic Proofs**: All assurance conclusions produce canonical JSON records signed via Ed25519 root keys.
+```
+Ronova/
+├── ronova/
+│   ├── api/             # FastAPI REST endpoints & request handlers
+│   ├── core/            # Pydantic schemas, types, and finding data structures
+│   ├── dataset/         # Dataset anomaly clustering & duplicate detection
+│   ├── detectors/       # STRIP Trojan detection & Image Sentinel algorithms
+│   ├── engine/          # Assurance policy evaluation rules
+│   ├── operations/      # Statistical drift computation (KS-test / Wasserstein)
+│   ├── provenance/      # Ed25519 signature engine, ledger chain & certificates
+│   ├── safety/          # Verdict gating (Defense, Healthcare, Enterprise)
+│   └── sandbox/         # Sandboxed ONNX runtime execution runners
+├── frontend/
+│   ├── src/
+│   │   ├── components/  # React cards (DatasetForensics, ImageSentinel, Drift, Provenance)
+│   │   ├── App.jsx      # Main interactive assurance dashboard
+│   │   └── index.css    # Tailwind styling and dark mode glassmorphism
+│   └── package.json
+├── data/                # Synthetic datasets for test replication
+├── models/              # Pre-compiled ONNX models (clean vs backdoored)
+├── scripts/             # End-to-end execution and regression scripts
+├── verify_certificate.py # Offline CLI tool for authenticating signed QR certificates
+└── README.md
+```
 
 ---
 
-## License
+## 🔒 Security & Air-Gap Compliance
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+* **100% Offline Capability**: Runs completely local without third-party cloud API dependencies.
+* **Deterministic Cryptography**: All security claims are backed by non-malleable Ed25519 digital signatures.
+* **Memory-Safe Execution**: ONNX model evaluations run within sandboxed runner environments with bounded memory allocation.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).

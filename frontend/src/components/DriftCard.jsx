@@ -12,7 +12,7 @@ export default function DriftCard({ inputDriftData }) {
               <Gauge className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-100">Input Distribution Drift</h3>
+              <h3 className="text-base font-bold text-slate-100">distribution-shift / input-anomaly indicator</h3>
               <p className="text-xs text-slate-400 font-mono">
                 Operations Assurance & Feature-Space Kolmogorov-Smirnov / PSI Analysis
               </p>
@@ -25,7 +25,7 @@ export default function DriftCard({ inputDriftData }) {
         </div>
 
         <p className="text-xs text-slate-400 leading-relaxed font-sans">
-          Upload an input batch via <code className="text-cyan-400 font-mono">POST /check/input</code> or run a model scan to evaluate live Input Distribution Drift.
+          Upload an input batch via <code className="text-cyan-400 font-mono">POST /check/input</code> or run a model scan to evaluate live distribution-shift / input-anomaly indicator.
         </p>
       </div>
     );
@@ -53,7 +53,7 @@ export default function DriftCard({ inputDriftData }) {
             <Gauge className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-100">Input Distribution Drift</h3>
+            <h3 className="text-base font-bold text-slate-100">distribution-shift / input-anomaly indicator</h3>
             <p className="text-xs text-slate-400 font-mono">
               Operations Assurance & Feature-Space Kolmogorov-Smirnov / PSI Analysis
             </p>
@@ -74,7 +74,7 @@ export default function DriftCard({ inputDriftData }) {
       {/* Metrics Banner */}
       <div className="grid grid-cols-3 gap-3 font-mono text-xs">
         <div className="bg-slate-950/70 border border-slate-800 p-3 rounded-xl">
-          <div className="text-[10px] text-slate-500 uppercase">Input Distribution Drift Score</div>
+          <div className="text-[10px] text-slate-500 uppercase">distribution-shift / input-anomaly score</div>
           <div className={`text-xl font-bold mt-0.5 ${isNormal ? "text-emerald-400" : "text-amber-400"}`}>
             {input_distribution_drift_score?.toFixed(4)}
           </div>
@@ -86,7 +86,7 @@ export default function DriftCard({ inputDriftData }) {
           </div>
         </div>
         <div className="bg-slate-950/70 border border-slate-800 p-3 rounded-xl">
-          <div className="text-[10px] text-slate-500 uppercase">Drift Threshold Boundary</div>
+          <div className="text-[10px] text-slate-500 uppercase">Threshold Boundary</div>
           <div className="text-sm font-semibold text-slate-300 mt-1">
             Normal &lt; 0.25 | High &ge; 0.50
           </div>
@@ -123,8 +123,7 @@ export default function DriftCard({ inputDriftData }) {
         <div className="space-y-1">
           <div className="font-semibold text-slate-300">Methodology & Limitations</div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            Input Distribution Drift measures statistical covariate shift between reference baseline training embeddings and live operational batches. 
-            <span className="text-slate-300 font-medium font-mono"> It does not claim complete adversarial example detection or universal out-of-distribution (OOD) guarantees.</span>
+            This channel flags inputs that deviate from the reference embedding distribution. It is not designed to catch adversarial examples specifically optimized to evade detection — that is a stated limitation.
           </p>
         </div>
       </div>

@@ -99,14 +99,14 @@ class InputDriftDetector:
             finding_type=f"INPUT_DISTRIBUTION_DRIFT_{status}",
             risk_score=risk,
             evidence_strength=strength,
-            title="Input Distribution Drift Indicator",
+            title="distribution-shift / input-anomaly indicator",
             explanation=(
                 f"Evaluated statistical distribution shift between reference baseline embeddings and live batch embeddings "
                 f"via 2-sample Kolmogorov-Smirnov test (Drift Score: {drift_score:.4f}, Method: KS, Status: {status})."
             ),
             limitations=(
-                "Input Distribution Drift measures statistical covariate shift between feature distributions; "
-                "it does not claim complete adversarial example detection or universal out-of-distribution (OOD) guarantees."
+                "This channel flags inputs that deviate from the reference embedding distribution. "
+                "It is not designed to catch adversarial examples specifically optimized to evade detection — that is a stated limitation."
             ),
             evidence_details={
                 "drift_score": round(drift_score, 4),

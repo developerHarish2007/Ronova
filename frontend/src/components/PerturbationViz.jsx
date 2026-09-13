@@ -105,7 +105,7 @@ export default function PerturbationViz({ stripAnalysis }) {
           <div className="font-semibold text-slate-300">Methodology & Limitations</div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
             STRIP superimposes test samples with clean reference patterns and measures prediction entropy across variants. 
-            Suppressed entropy indicates the model locks onto a backdoor trigger pattern regardless of overlay background. 
+            Suppressed entropy indicates behavior consistent with a backdoor trigger regardless of overlay background. 
             <span className="text-slate-300 font-medium font-mono"> Note: STRIP evaluates behavioral entropy under perturbation; it does not localize or reconstruct white-box trigger heatmaps.</span>
           </p>
         </div>
